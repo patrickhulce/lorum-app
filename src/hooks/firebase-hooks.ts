@@ -23,10 +23,14 @@ export enum LoadingState {
   Errored = 'errored',
 }
 
-function useFirebaseState<T>(
-  queryFn: () => Promise<T>,
-  deps: any[] = [],
-): [LoadingState, T | undefined] {
+type FirebaseState<T> = [
+  LoadingState,
+  T | undefined,
+  (n: LoadingState) => void,
+  (n: T | undefined) => void
+]
+
+function useFirebaseState<T>(queryFn: () => Promise<T>, deps: any[] = []): FirebaseState<T> {
   const [loadingState, setLoadingState] = useState(LoadingState.Loading)
   const [apiData, setApiData] = useState(undefined as T | undefined)
 
@@ -43,17 +47,17 @@ function useFirebaseState<T>(
     })()
   }, deps)
 
-  return [loadingState, apiData]
+  return [loadingState, apiData, setLoadingState, setApiData]
 }
 
-export function useLeagues(): [LoadingState, Array<ILeague> | undefined] {
+export function useLeagues(): FirebaseState<Array<ILeague>> {
   return useFirebaseState(async () => {
     const qs = await db.collection('leagues').get()
-    return qs.docs.map(v => v.data() as any)
+    return qs.docs.map(v => ({...v.data(), id: v.id} as any))
   })
 }
 
-export function useLeague(slug: string): [LoadingState, ILeague | undefined] {
+export function useLeague(slug: string): FirebaseState<ILeague> {
   return useFirebaseState(async () => {
     const qs = await db
       .collection('leagues')
@@ -61,7 +65,13 @@ export function useLeague(slug: string): [LoadingState, ILeague | undefined] {
       .limit(1)
       .get()
 
-    console.log(qs)
-    return qs.docs.map(v => v.data() as any)[0]
+    return qs.docs.map(v => ({...v.data(), id: v.id} as any))[0]
   }, [slug])
+}
+
+export async function saveLeague(league: ILeague): Promise<void> {
+  await db
+    .collection('leagues')
+    .doc(league.id)
+    .update(league)
 }

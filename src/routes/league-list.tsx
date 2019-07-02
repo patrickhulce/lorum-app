@@ -11,7 +11,7 @@ export function LeagueList() {
     <ul>
       {leagues.map(league => (
         <li key={league.slug}>
-          <Link to={`/leagues/${league.slug}`}>{league.name}</Link>
+          <Link to={`/leagues/${league.slug}/view`}>{league.name}</Link>
         </li>
       ))}
     </ul>
