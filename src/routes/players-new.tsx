@@ -1,18 +1,13 @@
 import React, {useState} from 'react'
 import {useLeague, saveLeague, LoadingState} from '../hooks/firebase-hooks'
 import {Loader} from '../components/loader'
-import {Link} from 'react-router-dom'
 import {ILeagueRouteParams} from '../types'
 import Paper from '@material-ui/core/Paper'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ArrowBackIcon from '@material-ui/icons/ArrowBack'
-import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
 import {makeStyles} from '@material-ui/core/styles'
 import SnackbarContent from '@material-ui/core/SnackbarContent'
+import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => ({
   form: {
@@ -23,6 +18,7 @@ const useStyles = makeStyles(theme => ({
   },
   errorDisplay: {
     backgroundColor: theme.palette.error.dark,
+    marginBottom: 10,
   },
 }))
 
@@ -33,30 +29,25 @@ export function PlayersNew(props: ILeagueRouteParams) {
   const [playerName, setPlayerName] = useState('')
   const [loadingState, league, setLoadingState] = useLeague(props.match.params.slug)
   if (!league) return <Loader loadingState={loadingState} />
+  const normalizedPlayer = normalize(playerName)
+  const normalizedPlayers = league.players.map(normalize)
+  const matchedPlayers = league.players.filter(p => normalize(p).includes(normalizedPlayer)).sort()
 
   let disabledMessage: string | undefined
-  if (league.players.some(p => normalize(p) === normalize(playerName))) {
+  if (normalizedPlayers.includes(normalizedPlayer)) {
     disabledMessage = 'Player already exists!'
   }
 
   return (
     <>
-      <Paper>
-        <List component="nav">
-          <Link to="../view">
-            <ListItem button>
-              <ListItemIcon>
-                <ArrowBackIcon />
-              </ListItemIcon>
-              <ListItemText primary="Back to League" />
-            </ListItem>
-          </Link>
-        </List>
-      </Paper>
+      <Typography variant="h4" style={{marginBottom: 15}}>
+        Add a Player
+      </Typography>
       <Paper>
         <form
           className={classes.form}
-          onSubmit={async () => {
+          onSubmit={async e => {
+            e.preventDefault()
             setLoadingState(LoadingState.Loading)
             await saveLeague({...league, players: [...league.players, playerName]})
             props.history.goBack()
@@ -78,6 +69,14 @@ export function PlayersNew(props: ILeagueRouteParams) {
           </Button>
         </form>
       </Paper>
+      <Typography variant="body1" style={{margin: 10}}>
+        Existing Players
+      </Typography>
+      <ul>
+        {matchedPlayers.slice(0, 10).map(player => (
+          <li key={player}>{player}</li>
+        ))}
+      </ul>
     </>
   )
 }

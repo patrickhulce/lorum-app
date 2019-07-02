@@ -1,5 +1,4 @@
 import React from 'react'
-import './app.css'
 import {BrowserRouter as Router, Route, Switch, Redirect} from 'react-router-dom'
 import {LeagueList} from './routes/league-list'
 import {LeagueView} from './routes/league-view'
@@ -24,7 +23,9 @@ import ListItemText from '@material-ui/core/ListItemText'
 import DashboardIcon from '@material-ui/icons/Dashboard'
 import TableOfContentsIcon from '@material-ui/icons/Toc'
 import PeopleIcon from '@material-ui/icons/People'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import BarChartIcon from '@material-ui/icons/BarChart'
+import {ILeagueRouteParams} from './types'
 
 const drawerWidth = 240
 
@@ -107,7 +108,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App() {
+function LorumApp(props: ILeagueRouteParams) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
   const handleDrawerOpen = () => setOpen(true)
@@ -130,8 +131,8 @@ function App() {
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             Lorum
           </Typography>
-          <IconButton color="inherit">
-            <PeopleIcon />
+          <IconButton color="inherit" onClick={() => props.history.goBack()}>
+            <ArrowBackIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -181,17 +182,23 @@ function App() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Router>
-            <Switch>
-              <Route exact path="/leagues" component={LeagueList} />
-              <Route exact path="/leagues/:slug/view" component={LeagueView} />
-              <Route exact path="/leagues/:slug/players/new" component={PlayersNew} />
-              <Redirect to="/leagues" />
-            </Switch>
-          </Router>
+          <Switch>
+            <Route exact path="/leagues" component={LeagueList} />
+            <Route exact path="/leagues/:slug/view" component={LeagueView} />
+            <Route exact path="/leagues/:slug/players/new" component={PlayersNew} />
+            <Redirect to="/leagues" />
+          </Switch>
         </Container>
       </main>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <Route path="/" component={LorumApp} />
+    </Router>
   )
 }
 

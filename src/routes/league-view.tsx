@@ -9,6 +9,7 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import DashboardIcon from '@material-ui/icons/Dashboard'
 import ListItemText from '@material-ui/core/ListItemText'
+import Typography from '@material-ui/core/Typography'
 
 export interface ILeagueViewProps {
   match: IRouteMatch<{slug: string}>
@@ -20,14 +21,11 @@ export function LeagueView(props: ILeagueViewProps) {
 
   return (
     <>
+      <Typography variant="h3" style={{marginBottom: 15}}>
+        {league.name}
+      </Typography>
       <Paper>
         <List component="nav">
-          <ListItem button>
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-            <ListItemText primary="Home" />
-          </ListItem>
           <Link to="./games/new">
             <ListItem button>
               <ListItemText primary="Start a Game" />
@@ -45,6 +43,7 @@ export function LeagueView(props: ILeagueViewProps) {
           </Link>
         </List>
       </Paper>
+      <pre>{JSON.stringify(league, null, 2)}</pre>
     </>
   )
 }
