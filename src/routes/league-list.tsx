@@ -1,5 +1,6 @@
 import React from 'react'
 import {useLeagues} from '../hooks/firebase-hooks'
+import {Link} from 'react-router-dom'
 
 export function LeagueList() {
   const [loadingState, leagues] = useLeagues()
@@ -10,7 +11,9 @@ export function LeagueList() {
   return (
     <ul>
       {leagues.map(league => (
-        <li key={league.slug}>{league.name}</li>
+        <li key={league.slug}>
+          <Link to={`/leagues/${league.slug}`}>{league.name}</Link>
+        </li>
       ))}
     </ul>
   )
