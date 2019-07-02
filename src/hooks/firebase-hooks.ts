@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import {ILeague} from '../types'
+import {ILeague, IGame} from '../types'
 
 import * as firebase from 'firebase/app'
 
@@ -69,9 +69,35 @@ export function useLeague(slug: string): FirebaseState<ILeague> {
   }, [slug])
 }
 
+export function useGame(gameId: string): FirebaseState<IGame> {
+  return useFirebaseState(async () => {
+    const qs = await db
+      .collection('games')
+      .doc(gameId)
+      .get()
+
+    return {...qs.data(), id: qs.id} as any
+  }, [gameId])
+}
+
 export async function saveLeague(league: ILeague): Promise<void> {
   await db
     .collection('leagues')
     .doc(league.id)
     .update(league)
 }
+
+export async function createGame(
+  game: Omit<IGame, 'id' | 'startedAt' | 'lastUpdatedAt'>,
+): Promise<IGame> {
+  const gameWithDate = {
+    ...game,
+    startedAt: new Date().toISOString(),
+    lastUpdatedAt: new Date().toISOString(),
+  }
+
+  const gameWithId = await db.collection('games').add(gameWithDate)
+  return {...gameWithDate, id: gameWithId.id}
+}
+
+export async function saveGame(game: IGame): Promise<void> {}

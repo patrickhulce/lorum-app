@@ -3,6 +3,7 @@ import {BrowserRouter as Router, Route, Switch, Redirect} from 'react-router-dom
 import {LeagueList} from './routes/league-list'
 import {LeagueView} from './routes/league-view'
 import {PlayersNew} from './routes/players-new'
+import {GamesNew} from './routes/games-new'
 
 import clsx from 'clsx'
 import {makeStyles} from '@material-ui/core/styles'
@@ -26,6 +27,7 @@ import PeopleIcon from '@material-ui/icons/People'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import BarChartIcon from '@material-ui/icons/BarChart'
 import {ILeagueRouteParams} from './types'
+import {GamesView} from './routes/games-view'
 
 const drawerWidth = 240
 
@@ -186,6 +188,8 @@ function LorumApp(props: ILeagueRouteParams) {
             <Route exact path="/leagues" component={LeagueList} />
             <Route exact path="/leagues/:slug/view" component={LeagueView} />
             <Route exact path="/leagues/:slug/players/new" component={PlayersNew} />
+            <Route exact path="/leagues/:slug/games/new" component={GamesNew} />
+            <Route exact path="/leagues/:slug/games/:gameId/view" component={GamesView} />
             <Redirect to="/leagues" />
           </Switch>
         </Container>
