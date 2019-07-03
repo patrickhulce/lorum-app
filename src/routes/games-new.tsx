@@ -12,6 +12,7 @@ import {makeStyles} from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Switch from '@material-ui/core/Switch'
+import {Link} from 'react-router-dom'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -102,6 +103,9 @@ export function GamesNew(props: ILeagueRouteParams) {
             }
             label="Ranked?"
           />
+          <FormControl style={{display: 'block', marginBottom: 10, textDecoration: 'underline'}}>
+            <Link to="../players/new">Can't find your name? Add a player</Link>
+          </FormControl>
           <FormControl>
             <Button variant="contained" color="primary" type="submit" disabled={!canStart}>
               Start

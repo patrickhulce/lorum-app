@@ -41,7 +41,6 @@ export function LeagueView(props: ILeagueViewProps) {
           </Link>
         </List>
       </Paper>
-      <pre>{JSON.stringify(league, null, 2)}</pre>
     </>
   )
 }
