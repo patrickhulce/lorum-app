@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {useLeague, useGames} from '../hooks/firebase-hooks'
 import {Loader} from '../components/loader'
 import {ILeagueRouteParams} from '../types'

@@ -14,6 +14,7 @@
     "clsx": "^1.0.4",
     "firebase": "6.2.4",
     "lodash": "^4.17.11",
+    "nosleep.js": "^0.9.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.1",
