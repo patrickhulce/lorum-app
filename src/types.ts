@@ -45,6 +45,7 @@ export interface IRouteMatch<TParams> {
 }
 
 export interface ILeagueRouteParams<TParams extends {slug: string} = {slug: string}> {
+  location: {pathname: string}
   history: import('history').History
   match: IRouteMatch<TParams>
 }

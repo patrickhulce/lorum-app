@@ -32,6 +32,8 @@ import {GamesList} from './routes/games-list'
 
 const drawerWidth = 240
 
+const LEAGUES_REGEX = /\/leagues\/\w+\//
+
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
@@ -109,6 +111,9 @@ const useStyles = makeStyles(theme => ({
   fixedHeight: {
     height: 240,
   },
+  disabledMenuItem: {
+    opacity: 0.5,
+  },
 }))
 
 function LorumApp(props: ILeagueRouteParams) {
@@ -116,6 +121,8 @@ function LorumApp(props: ILeagueRouteParams) {
   const [open, setOpen] = React.useState(false)
   const handleDrawerOpen = () => setOpen(true)
   const handleDrawerClose = () => setOpen(false)
+  const isInLeague = LEAGUES_REGEX.test(props.location.pathname)
+  const [leaguePortion] = props.location.pathname.match(LEAGUES_REGEX) || ['']
 
   return (
     <div className={classes.root}>
@@ -158,21 +165,43 @@ function LorumApp(props: ILeagueRouteParams) {
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
-              <ListItemText primary="Home" />
+              <ListItemText
+                primary="Home"
+                onClick={() => {
+                  handleDrawerClose()
+                  props.history.push('/')
+                }}
+              />
             </ListItem>
             <ListItem button>
               <ListItemIcon>
                 <TableOfContentsIcon />
               </ListItemIcon>
-              <ListItemText primary="Games" />
+              <ListItemText
+                primary="Games"
+                className={clsx({[classes.disabledMenuItem]: !isInLeague})}
+                onClick={() => {
+                  if (!isInLeague) return
+                  handleDrawerClose()
+                  props.history.push(`${leaguePortion}games/list`)
+                }}
+              />
             </ListItem>
             <ListItem button>
               <ListItemIcon>
                 <PeopleIcon />
               </ListItemIcon>
-              <ListItemText primary="Players" />
+              <ListItemText
+                primary="Add Player"
+                className={clsx({[classes.disabledMenuItem]: !isInLeague})}
+                onClick={() => {
+                  if (!isInLeague) return
+                  handleDrawerClose()
+                  props.history.push(`${leaguePortion}players/new`)
+                }}
+              />
             </ListItem>
-            <ListItem button>
+            <ListItem button style={{display: 'none'}}>
               <ListItemIcon>
                 <BarChartIcon />
               </ListItemIcon>
