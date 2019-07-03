@@ -94,7 +94,7 @@ function isValidScoreCombination(currentHand: Hand, scores: number[]): boolean {
   }
 }
 
-const HandDisplay = (props: {score: IScoreEntry}) => {
+const HandDisplay = (props: {score: IScoreEntry; cummulative: IScoreEntry}) => {
   const score = props.score
   const classes = useStyles()
   return (
@@ -105,22 +105,22 @@ const HandDisplay = (props: {score: IScoreEntry}) => {
     >
       <div className={clsx(classes.handScore)}>
         <span className={clsx({[classes.handScoreBomb]: score.player1 === 10})}>
-          {score.player1}
+          {props.cummulative.player1}
         </span>
       </div>
       <div className={clsx(classes.handScore)}>
         <span className={clsx({[classes.handScoreBomb]: score.player2 === 10})}>
-          {score.player2}
+          {props.cummulative.player2}
         </span>
       </div>
       <div className={clsx(classes.handScore)}>
         <span className={clsx({[classes.handScoreBomb]: score.player3 === 10})}>
-          {score.player3}
+          {props.cummulative.player3}
         </span>
       </div>
       <div className={clsx(classes.handScore)}>
         <span className={clsx({[classes.handScoreBomb]: score.player4 === 10})}>
-          {score.player4}
+          {props.cummulative.player4}
         </span>
       </div>
     </div>
@@ -179,6 +179,8 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
 
   const playerNames = [game.player1, game.player2, game.player3, game.player4]
   const playerDisplayNames = playerNames.map(n => getPlayerDisplayName(n, playerNames))
+  const cummulativeScore = {...game.scores[0]}
+
   return (
     <>
       <Paper className={classes.paper}>
@@ -191,9 +193,15 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
               <div style={{width: '25%', textAlign: 'center'}}>{displayName}</div>
             ))}
           </div>
-          {game.scores.map(score => (
-            <HandDisplay score={score} key={score.playedAt} />
-          ))}
+          {game.scores.map(score => {
+            cummulativeScore.player1 += score.player1
+            cummulativeScore.player2 += score.player2
+            cummulativeScore.player3 += score.player3
+            cummulativeScore.player4 += score.player4
+            return (
+              <HandDisplay score={score} key={score.playedAt} cummulative={{...cummulativeScore}} />
+            )
+          })}
         </div>
       </Paper>
       <Paper className={classes.paper}>
