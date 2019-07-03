@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function getCurrentRoundAndHand(game: IGame): [number, Hand] {
+function getNextRoundAndHandToScore(game: IGame): [number, Hand] {
   if (!game.scores.length) return [1, Hand.Hearts]
   if (game.scores.length === 32) return [-1, Hand.Hearts]
 
@@ -154,8 +154,8 @@ const RegularScoreSet = (props: {players: Array<[string, number, (x: number) => 
     <>
       {props.players.map(([playerName, value, setValue]) => {
         return (
-          <FormControl key={playerName} style={{marginBottom: 10}}>
-            <FormLabel>{playerName}</FormLabel>
+          <FormControl key={playerName} style={{marginBottom: 10, width: '100%'}}>
+            <FormLabel style={{marginBottom: 5}}>{playerName}</FormLabel>
             <ButtonScoreSet value={value} setValue={setValue} />
           </FormControl>
         )
@@ -167,6 +167,9 @@ const RegularScoreSet = (props: {players: Array<[string, number, (x: number) => 
 export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: string}>) {
   const classes = useStyles()
 
+  const [isInEditMode, setEditMode] = useState(false)
+  const [activeRound, setEditRound] = useState(-1)
+  const [activeHand, setEditHand] = useState(Hand.Hearts)
   const [loadIncrement, setLoadIncrement] = useState(0)
   const [player1State, setPlayer1] = useState(0)
   const [player2State, setPlayer2] = useState(0)
@@ -175,11 +178,15 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
 
   const [loadingState, game, setLoadingState] = useGame(props.match.params.gameId, loadIncrement)
   if (!game || loadingState !== LoadingState.Loaded) return <Loader loadingState={loadingState} />
-  const [currentRound, currentHand] = getCurrentRoundAndHand(game)
 
+  const [nextRoundToScore, nextHandToScore] = getNextRoundAndHandToScore(game)
+  const currentRound = isInEditMode ? activeRound : nextRoundToScore
+  const currentHand = isInEditMode ? activeHand : nextHandToScore
+
+  const scores = _.sortBy(game.scores, score => score.round * 8 + score.hand)
   const playerNames = [game.player1, game.player2, game.player3, game.player4]
   const playerDisplayNames = playerNames.map(n => getPlayerDisplayName(n, playerNames))
-  const cummulativeScore = {...game.scores[0]}
+  const cummulativeScore = {...scores[0], player1: 0, player2: 0, player3: 0, player4: 0}
 
   return (
     <>
@@ -195,7 +202,7 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
               </div>
             ))}
           </div>
-          {game.scores.map(score => {
+          {scores.map(score => {
             cummulativeScore.player1 += score.player1
             cummulativeScore.player2 += score.player2
             cummulativeScore.player3 += score.player3
@@ -208,7 +215,7 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
       </Paper>
       <Paper className={classes.paper}>
         <Typography variant="h5" style={{marginBottom: 5}}>
-          {getHandDisplayName(currentHand)}
+          {getHandDisplayName(currentHand)} {isInEditMode ? `(Edit, Round ${currentRound})` : ''}
         </Typography>
         <RegularScoreSet
           players={[
@@ -234,7 +241,9 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
             await saveGame({
               ...game,
               scores: [
-                ...game.scores,
+                ...scores.filter(
+                  score => !(score.round === currentRound && score.hand === currentHand),
+                ),
                 {
                   round: currentRound,
                   hand: currentHand,
@@ -246,6 +255,7 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
                 },
               ],
             })
+            setEditMode(false)
             setPlayer1(0)
             setPlayer2(0)
             setPlayer3(0)
@@ -254,6 +264,36 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
           }}
         >
           Save Scores
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={scores.length === 0}
+          onClick={() => {
+            if (isInEditMode) {
+              setEditMode(false)
+              setPlayer1(0)
+              setPlayer2(0)
+              setPlayer3(0)
+              setPlayer4(0)
+              return
+            }
+
+            const [round, hand] = getNextRoundAndHandToScore({...game, scores: scores.slice(0, -1)})
+            setEditRound(round)
+            setEditHand(hand)
+            const activeScore = scores.find(score => score.round === round && score.hand === hand)
+            if (activeScore) {
+              setPlayer1(activeScore.player1)
+              setPlayer2(activeScore.player2)
+              setPlayer3(activeScore.player3)
+              setPlayer4(activeScore.player4)
+            }
+            setEditMode(true)
+          }}
+          style={{display: 'block', marginTop: 10}}
+        >
+          {isInEditMode ? 'Leave Edit Mode' : 'Oops I made a mistake! (Edit Mode)'}
         </Button>
       </Paper>
     </>
