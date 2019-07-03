@@ -17,7 +17,8 @@ document.addEventListener(
   'click',
   function enableNoSleep() {
     document.removeEventListener('click', enableNoSleep, false)
-    if (process.env.NODE_ENV === 'production') noSleep.enable()
+    if (process.env.NODE_ENV === 'production' && navigator.userAgent.includes('Mobile'))
+      noSleep.enable()
   },
   false,
 )
