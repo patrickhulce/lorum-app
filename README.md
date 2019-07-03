@@ -6,4 +6,6 @@
 - recency check before saving scores
 - statistics view
 - scroll down name bar
-- make drawer actually work
+- show percentage complete in games list
+- hide completed games in games list
+- game list pagination
