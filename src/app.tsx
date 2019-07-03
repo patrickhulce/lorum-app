@@ -28,6 +28,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import BarChartIcon from '@material-ui/icons/BarChart'
 import {ILeagueRouteParams} from './types'
 import {GamesView} from './routes/games-view'
+import {GamesList} from './routes/games-list'
 
 const drawerWidth = 240
 
@@ -189,6 +190,7 @@ function LorumApp(props: ILeagueRouteParams) {
             <Route exact path="/leagues/:slug/view" component={LeagueView} />
             <Route exact path="/leagues/:slug/players/new" component={PlayersNew} />
             <Route exact path="/leagues/:slug/games/new" component={GamesNew} />
+            <Route exact path="/leagues/:slug/games/list" component={GamesList} />
             <Route exact path="/leagues/:slug/games/:gameId/view" component={GamesView} />
             <Redirect to="/leagues" />
           </Switch>

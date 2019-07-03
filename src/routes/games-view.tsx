@@ -190,7 +190,9 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
         <div>
           <div style={{display: 'flex', flexDirection: 'row', fontWeight: 'bold'}}>
             {playerDisplayNames.map(displayName => (
-              <div style={{width: '25%', textAlign: 'center'}}>{displayName}</div>
+              <div style={{width: '25%', textAlign: 'center'}} key={displayName}>
+                {displayName}
+              </div>
             ))}
           </div>
           {game.scores.map(score => {

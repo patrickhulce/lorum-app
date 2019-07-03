@@ -70,6 +70,18 @@ export function useLeague(slug: string): FirebaseState<ILeague> {
   }, [slug])
 }
 
+export function useGames(leagueId: string | undefined): FirebaseState<Array<IGame>> {
+  return useFirebaseState(async () => {
+    if (!leagueId) return []
+
+    const qs = await db
+      .collection('games')
+      .where('leagueId', '==', leagueId)
+      .get()
+    return qs.docs.map(v => ({...v.data(), id: v.id} as any))
+  }, [leagueId])
+}
+
 export function useGame(gameId: string, loadValue: number = 0): FirebaseState<IGame> {
   return useFirebaseState(async () => {
     const qs = await db
