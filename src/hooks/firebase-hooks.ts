@@ -37,6 +37,7 @@ function useFirebaseState<T>(queryFn: () => Promise<T>, deps: any[] = []): Fireb
   useEffect(() => {
     ;(async () => {
       try {
+        setLoadingState(LoadingState.Loading)
         const result = await queryFn()
         setApiData(result)
         setLoadingState(LoadingState.Loaded)
@@ -69,7 +70,7 @@ export function useLeague(slug: string): FirebaseState<ILeague> {
   }, [slug])
 }
 
-export function useGame(gameId: string): FirebaseState<IGame> {
+export function useGame(gameId: string, loadValue: number = 0): FirebaseState<IGame> {
   return useFirebaseState(async () => {
     const qs = await db
       .collection('games')
@@ -77,7 +78,7 @@ export function useGame(gameId: string): FirebaseState<IGame> {
       .get()
 
     return {...qs.data(), id: qs.id} as any
-  }, [gameId])
+  }, [gameId, loadValue])
 }
 
 export async function saveLeague(league: ILeague): Promise<void> {
@@ -100,4 +101,14 @@ export async function createGame(
   return {...gameWithDate, id: gameWithId.id}
 }
 
-export async function saveGame(game: IGame): Promise<void> {}
+export async function saveGame(game: IGame): Promise<void> {
+  const gameWithDate = {
+    ...game,
+    lastUpdatedAt: new Date().toISOString(),
+  }
+
+  await db
+    .collection('games')
+    .doc(game.id)
+    .update(gameWithDate)
+}

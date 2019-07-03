@@ -17,7 +17,7 @@ export enum Hand {
 }
 
 export interface IScoreEntry {
-  round: 1 | 2 | 3 | 4
+  round: number
   hand: Hand
   player1: number
   player2: number
