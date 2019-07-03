@@ -10,6 +10,12 @@ import Button from '@material-ui/core/Button'
 import ButtonGroup from '@material-ui/core/ButtonGroup'
 import clsx from 'clsx'
 import {FormControl, FormLabel} from '@material-ui/core'
+import {
+  getNextRoundAndHandToScore,
+  getHandDisplayName,
+  getPlayerDisplayNames,
+  isValidScoreCombination,
+} from '../utils/game-utils'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -39,60 +45,6 @@ const useStyles = makeStyles(theme => ({
     color: [[theme.palette.primary.contrastText], '!important'] as any,
   },
 }))
-
-function getNextRoundAndHandToScore(game: IGame): [number, Hand] {
-  if (!game.scores.length) return [1, Hand.Hearts]
-  if (game.scores.length === 32) return [-1, Hand.Hearts]
-
-  const maxRound = Math.max(...game.scores.map(s => s.round))
-  const maxHand = Math.max(...game.scores.filter(game => game.round === maxRound).map(s => s.hand))
-  if (maxHand === Hand.SevenUp) return [maxRound + 1, Hand.Hearts]
-  return [maxRound, maxHand + 1]
-}
-
-function getHandDisplayName(hand: Hand): string {
-  return _.startCase(Object.keys(Hand).find(h => (Hand as any)[h] === hand)!)
-}
-
-function getPlayerFirstName(name: string): string {
-  const parts = name.split(/\s+/g)
-  if (parts.length > 2) return parts.slice(0, -1).join(' ')
-  return parts[0]
-}
-
-function getPlayerDisplayName(name: string, allNames: string[]): string {
-  const firstName = getPlayerFirstName(name)
-  const otherFirstnames = allNames.filter(n => n !== name).map(getPlayerFirstName)
-  if (!otherFirstnames.filter(name => name === firstName).length) return firstName
-
-  let longestDistinguishable = ''
-  for (let i = 0; i < name.length; i++) {
-    longestDistinguishable = firstName.slice(0, i)
-    if (otherFirstnames.every(n => !n.startsWith(longestDistinguishable))) break
-  }
-
-  return longestDistinguishable
-}
-
-function isValidScoreCombination(currentHand: Hand, scores: number[]): boolean {
-  const totalValues = _.sum(scores)
-  const numberOfTens = scores.filter(s => s === 10).length
-  const isMoonShot = totalValues === 30 && numberOfTens === 3
-  switch (currentHand) {
-    case Hand.Hearts:
-    case Hand.Each:
-      return totalValues === 8 || isMoonShot
-    case Hand.Uppers:
-      return totalValues === 10 || isMoonShot
-    case Hand.Last:
-    case Hand.RedKing:
-    case Hand.BabyBlue:
-      return totalValues === 10 && numberOfTens === 1
-    case Hand.SevenUp:
-    case Hand.Quartet:
-      return scores.filter(s => s === 0).length === 1 && scores.filter(s => s > 8).length === 0
-  }
-}
 
 const HandDisplay = (props: {score: IScoreEntry; cummulative: IScoreEntry}) => {
   const score = props.score
@@ -184,15 +136,14 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
   const currentHand = isInEditMode ? activeHand : nextHandToScore
 
   const scores = _.sortBy(game.scores, score => score.round * 8 + score.hand)
-  const playerNames = [game.player1, game.player2, game.player3, game.player4]
-  const playerDisplayNames = playerNames.map(n => getPlayerDisplayName(n, playerNames))
+  const playerDisplayNames = getPlayerDisplayNames(game)
   const cummulativeScore = {...scores[0], player1: 0, player2: 0, player3: 0, player4: 0}
 
   return (
     <>
       <Paper className={classes.paper}>
         <Typography variant="h5" style={{marginBottom: 5}}>
-          Game with {playerDisplayNames.join(', ')}
+          {playerDisplayNames.join(', ')}
         </Typography>
         <div>
           <div style={{display: 'flex', flexDirection: 'row', fontWeight: 'bold'}}>

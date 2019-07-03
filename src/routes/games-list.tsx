@@ -9,6 +9,7 @@ import {Link} from 'react-router-dom'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
+import {getPlayerDisplayNames} from '../utils/game-utils'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -33,7 +34,10 @@ export function GamesList(props: ILeagueRouteParams) {
           {games.map(game => (
             <Link key={game.id} to={`./${game.id}/view`}>
               <ListItem button key={game.id}>
-                <ListItemText primary={`Game with ${game.player1}`} />
+                <ListItemText
+                  primary={getPlayerDisplayNames(game).join(', ')}
+                  secondary={new Date(game.startedAt).toLocaleString()}
+                />
               </ListItem>
             </Link>
           ))}
