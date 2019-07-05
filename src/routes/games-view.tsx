@@ -139,6 +139,94 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
   const playerDisplayNames = getPlayerDisplayNames(game)
   const cummulativeScore = {...scores[0], player1: 0, player2: 0, player3: 0, player4: 0}
 
+  let editUI: JSX.Element | null = (
+    <Paper className={classes.paper}>
+      <Typography variant="h5" style={{marginBottom: 5}}>
+        {getHandDisplayName(currentHand)} {isInEditMode ? `(Edit, Round ${currentRound})` : ''}
+      </Typography>
+      <RegularScoreSet
+        players={[
+          [game.player1, player1State, setPlayer1],
+          [game.player2, player2State, setPlayer2],
+          [game.player3, player3State, setPlayer3],
+          [game.player4, player4State, setPlayer4],
+        ]}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        disabled={
+          !isValidScoreCombination(currentHand, [
+            player1State,
+            player2State,
+            player3State,
+            player4State,
+          ])
+        }
+        onClick={async () => {
+          setLoadingState(LoadingState.Loading)
+          await saveGame({
+            ...game,
+            scores: [
+              ...scores.filter(
+                score => !(score.round === currentRound && score.hand === currentHand),
+              ),
+              {
+                round: currentRound,
+                hand: currentHand,
+                player1: player1State,
+                player2: player2State,
+                player3: player3State,
+                player4: player4State,
+                playedAt: new Date().toISOString(),
+              },
+            ],
+          })
+          setEditMode(false)
+          setPlayer1(0)
+          setPlayer2(0)
+          setPlayer3(0)
+          setPlayer4(0)
+          setLoadIncrement(x => x + 1)
+        }}
+      >
+        Save Scores
+      </Button>
+      <Button
+        size="small"
+        variant="contained"
+        disabled={scores.length === 0}
+        onClick={() => {
+          if (isInEditMode) {
+            setEditMode(false)
+            setPlayer1(0)
+            setPlayer2(0)
+            setPlayer3(0)
+            setPlayer4(0)
+            return
+          }
+
+          const [round, hand] = getNextRoundAndHandToScore({...game, scores: scores.slice(0, -1)})
+          setEditRound(round)
+          setEditHand(hand)
+          const activeScore = scores.find(score => score.round === round && score.hand === hand)
+          if (activeScore) {
+            setPlayer1(activeScore.player1)
+            setPlayer2(activeScore.player2)
+            setPlayer3(activeScore.player3)
+            setPlayer4(activeScore.player4)
+          }
+          setEditMode(true)
+        }}
+        style={{display: 'block', marginTop: 10}}
+      >
+        {isInEditMode ? 'Leave Edit Mode' : 'Oops I made a mistake! (Edit Mode)'}
+      </Button>
+    </Paper>
+  )
+
+  if (nextRoundToScore === -1) editUI = null
+
   return (
     <>
       <Paper className={classes.paper}>
@@ -164,89 +252,7 @@ export function GamesView(props: ILeagueRouteParams<{slug: string; gameId: strin
           })}
         </div>
       </Paper>
-      <Paper className={classes.paper}>
-        <Typography variant="h5" style={{marginBottom: 5}}>
-          {getHandDisplayName(currentHand)} {isInEditMode ? `(Edit, Round ${currentRound})` : ''}
-        </Typography>
-        <RegularScoreSet
-          players={[
-            [game.player1, player1State, setPlayer1],
-            [game.player2, player2State, setPlayer2],
-            [game.player3, player3State, setPlayer3],
-            [game.player4, player4State, setPlayer4],
-          ]}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={
-            !isValidScoreCombination(currentHand, [
-              player1State,
-              player2State,
-              player3State,
-              player4State,
-            ])
-          }
-          onClick={async () => {
-            setLoadingState(LoadingState.Loading)
-            await saveGame({
-              ...game,
-              scores: [
-                ...scores.filter(
-                  score => !(score.round === currentRound && score.hand === currentHand),
-                ),
-                {
-                  round: currentRound,
-                  hand: currentHand,
-                  player1: player1State,
-                  player2: player2State,
-                  player3: player3State,
-                  player4: player4State,
-                  playedAt: new Date().toISOString(),
-                },
-              ],
-            })
-            setEditMode(false)
-            setPlayer1(0)
-            setPlayer2(0)
-            setPlayer3(0)
-            setPlayer4(0)
-            setLoadIncrement(x => x + 1)
-          }}
-        >
-          Save Scores
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          disabled={scores.length === 0}
-          onClick={() => {
-            if (isInEditMode) {
-              setEditMode(false)
-              setPlayer1(0)
-              setPlayer2(0)
-              setPlayer3(0)
-              setPlayer4(0)
-              return
-            }
-
-            const [round, hand] = getNextRoundAndHandToScore({...game, scores: scores.slice(0, -1)})
-            setEditRound(round)
-            setEditHand(hand)
-            const activeScore = scores.find(score => score.round === round && score.hand === hand)
-            if (activeScore) {
-              setPlayer1(activeScore.player1)
-              setPlayer2(activeScore.player2)
-              setPlayer3(activeScore.player3)
-              setPlayer4(activeScore.player4)
-            }
-            setEditMode(true)
-          }}
-          style={{display: 'block', marginTop: 10}}
-        >
-          {isInEditMode ? 'Leave Edit Mode' : 'Oops I made a mistake! (Edit Mode)'}
-        </Button>
-      </Paper>
+      {editUI}
     </>
   )
 }
